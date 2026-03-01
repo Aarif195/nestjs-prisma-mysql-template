@@ -27,7 +27,7 @@ export class AdminService {
       throw new UnauthorizedException('Invalid admin credentials');
     }
 
-    const payload = { sub: admin.id, email: admin.email, role: admin.role };
+    const payload = { id: admin.id, email: admin.email, role: admin.role };
 
     return {
       message: 'Admin login successful',

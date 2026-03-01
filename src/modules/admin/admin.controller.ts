@@ -1,10 +1,15 @@
-import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
+import { AuthGuard } from '@/common/guards/auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
 
-@ApiTags('Admin')
+@ApiTags('Admin Dashboard')
 @Controller('admin')
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('superadmin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
