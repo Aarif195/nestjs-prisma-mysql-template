@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { MailModule } from './modules/mail/mail.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { MailModule } from './modules/mail/mail.module';
     AuthModule,
     CloudinaryModule,
     MailModule,
+    AdminModule,
+    
   ],
   controllers: [AppController],
   providers: [AppService],

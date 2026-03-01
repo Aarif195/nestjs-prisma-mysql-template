@@ -1,0 +1,42 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+// import { PrismaService } from 'src/prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { AdminLoginDto } from './dto/admin-login.dto';
+import { DatabaseService } from '@/database/database.service';
+
+@Injectable()
+export class AdminService {
+  constructor(
+    private prisma: DatabaseService,
+    private jwt: JwtService,
+  ) {}
+
+  async login(dto: AdminLoginDto) {
+    const admin = await this.prisma.admin.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!admin) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, admin.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    const payload = { sub: admin.id, email: admin.email, role: admin.role };
+
+    return {
+      message: 'Admin login successful',
+      accessToken: await this.jwt.signAsync(payload),
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+    };
+  }
+}
