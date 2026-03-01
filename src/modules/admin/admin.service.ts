@@ -1,5 +1,4 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-// import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AdminLoginDto } from './dto/admin-login.dto';
@@ -10,8 +9,9 @@ export class AdminService {
   constructor(
     private prisma: DatabaseService,
     private jwt: JwtService,
-  ) {}
+  ) { }
 
+  // login
   async login(dto: AdminLoginDto) {
     const admin = await this.prisma.admin.findUnique({
       where: { email: dto.email },
@@ -39,4 +39,7 @@ export class AdminService {
       },
     };
   }
+
+
+
 }
