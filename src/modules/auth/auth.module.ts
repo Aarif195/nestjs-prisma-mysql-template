@@ -6,7 +6,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailModule } from '../mail/mail.module';
 
-
 @Module({
   imports: [
     DatabaseModule,
@@ -15,8 +14,11 @@ import { MailModule } from '../mail/mail.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET'),
-        signOptions: { expiresIn: '1d' },
+        // secret: config.get('JWT_SECRET'),
+        secret: config.get('jwt.secret'),
+        signOptions: {
+          expiresIn: config.get('jwt.expiresIn'),
+        },
       }),
     }),
   ],
