@@ -3,4 +3,10 @@ export const envConfig = () => ({
     secret: process.env.JWT_SECRET,
     expiresIn: '1d',
   },
+
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+  },
 });
