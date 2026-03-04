@@ -30,19 +30,22 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { ErrorResponseDto } from '@/common/dto/error-response.dto';
+import { Public } from '@/common/decorators/public.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({ type: RegisterDto })
   @ApiCreatedResponse({
-        description: 'User registered successfully',
-        type: AuthResponseDto
-    })  @ApiBadRequestResponse({
+    description: 'User registered successfully',
+    type: AuthResponseDto,
+  })
+  @ApiBadRequestResponse({
     description: 'Email already exists',
     type: ErrorResponseDto,
   })
@@ -51,14 +54,16 @@ export class AuthController {
   }
 
   // login
+  @Public()
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'User login' })
   @ApiBody({ type: LoginDto })
- @ApiOkResponse({
-        description: 'User logged in successfully',
-        type: AuthResponseDto
-    })  @ApiUnauthorizedResponse({
+  @ApiOkResponse({
+    description: 'User logged in successfully',
+    type: AuthResponseDto,
+  })
+  @ApiUnauthorizedResponse({
     description: 'Invalid credentials',
     type: ErrorResponseDto,
   })
@@ -67,6 +72,7 @@ export class AuthController {
   }
 
   // google
+  @Public()
   @Post('google')
   @HttpCode(200) // Usually 200 for logins
   @ApiOperation({ summary: 'Google OAuth login/register' })
@@ -86,7 +92,6 @@ export class AuthController {
   // Guards work
   @Get('profile')
   @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
   @Roles('student', 'superadmin')
   @ApiOperation({ summary: 'Get profile (Protected Route Test)' })
   @ApiOkResponse({

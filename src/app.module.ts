@@ -4,10 +4,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
-import { MailModule } from './modules/mail/mail.module';
+import { CloudinaryModule } from './providers/cloudinary/cloudinary.module';
+import { MailModule } from './providers/mail/mail.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { envConfig } from './common/config/env.config';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './common/guards/auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
   imports: [
@@ -22,6 +25,16 @@ import { envConfig } from './common/config/env.config';
     AdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+ providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useExisting: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useExisting: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

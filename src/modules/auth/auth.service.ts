@@ -8,7 +8,7 @@ import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { Role } from '@prisma/client';
 
-import { MailService } from '../mail/mail.service';
+import { MailService } from '../../providers/mail/mail.service';
 import { OAuth2Client } from 'google-auth-library';
 
 // Initialize the client
