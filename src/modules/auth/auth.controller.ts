@@ -32,6 +32,7 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { ErrorResponseDto } from '@/common/dto/error-response.dto';
 import { Public } from '@/common/decorators/public.decorator';
 import { Throttle } from '@nestjs/throttler';
+import { Role } from '@prisma/client';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -95,7 +96,7 @@ export class AuthController {
   // Guards work
   @Get('profile')
   @ApiBearerAuth()
-  @Roles('student', 'superadmin')
+  @Roles(Role.student, Role.superadmin)
   @ApiOperation({ summary: 'Get profile (Protected Route Test)' })
   @ApiOkResponse({
     description: 'Returns access confirmation',

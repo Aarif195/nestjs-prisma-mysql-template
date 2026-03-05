@@ -11,7 +11,8 @@ import { envConfig } from './common/config/env.config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './common/guards/auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { CustomThrottlerGuard } from './common/guards/throttler-proxy.guard';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CustomThrottlerGuard,
     },
     {
       provide: APP_GUARD,
