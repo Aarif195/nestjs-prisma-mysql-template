@@ -31,19 +31,6 @@ model User {
 
 enum Role {
   student
-  hostelOwner 
   superadmin
 }
 
-model Admin {
-  id        Int      @id @default(autoincrement())
-  firstName String   @db.VarChar(255)
-  lastName  String   @db.VarChar(255)
-  email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  role      String   @default("superadmin") @db.VarChar(50)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("admins")
-}

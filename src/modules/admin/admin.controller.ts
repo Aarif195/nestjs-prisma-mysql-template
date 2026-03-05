@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import {
   ApiOperation,
   ApiResponse,
@@ -15,17 +9,18 @@ import {
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 
-
 import { Roles } from '@/common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { AdminResponseDto } from './dto/admin-response.dto';
 import { ErrorResponseDto } from '@/common/dto/error-response.dto';
 import { Public } from '@/common/decorators/public.decorator';
 
+
 @ApiTags('Admin Dashboard')
 @Controller('admin')
-@Roles('superadmin')
+@Roles(Role.superadmin)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

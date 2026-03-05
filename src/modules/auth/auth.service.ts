@@ -15,6 +15,7 @@ import { Role } from '@prisma/client';
 import { MailService } from '../../providers/mail/mail.service';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
+import { welcomeEmailTemplate } from '@/common/templates/welcome-email.template';
 
 @Injectable()
 export class AuthService {
@@ -45,13 +46,14 @@ export class AuthService {
 
     // Send Welcome Email
     try {
+
+      const senderName = this.configService.get<string>('mail.senderName') || 'Our Team';
+      const emailContent = welcomeEmailTemplate(dto.firstName, senderName);
+
       await this.mailService.sendMail(
         dto.email,
         'Welcome to our platform!',
-        `<p>Hi ${dto.firstName},</p>
-       <p>Thank you for registering with us. You can now login to your account.</p>
-       <p>Best regards,</p>
-       <p>${process.env.MAIL_SENDER_NAME || 'Our Team'}</p>`,
+       emailContent,
       );
     } catch (error) {
       console.error('Email failed to send:', error.message);
