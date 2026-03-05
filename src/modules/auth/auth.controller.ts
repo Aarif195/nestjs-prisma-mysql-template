@@ -31,6 +31,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { ErrorResponseDto } from '@/common/dto/error-response.dto';
 import { Public } from '@/common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -38,6 +39,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({ type: RegisterDto })
@@ -55,6 +57,7 @@ export class AuthController {
 
   // login
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'User login' })

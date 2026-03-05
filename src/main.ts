@@ -24,6 +24,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
 
+  // Swagger Api
   const config = new DocumentBuilder()
     .setTitle('Student Welfare Platform API')
     .setDescription('The API documentation for the Student Welfare Platform')

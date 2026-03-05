@@ -11,6 +11,7 @@ import { envConfig } from './common/config/env.config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './common/guards/auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -18,6 +19,12 @@ import { RolesGuard } from './common/guards/roles.guard';
       isGlobal: true,
       load: [envConfig],
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10, // 10 requests per minute
+      },
+    ]),
     DatabaseModule,
     AuthModule,
     CloudinaryModule,
@@ -25,8 +32,12 @@ import { RolesGuard } from './common/guards/roles.guard';
     AdminModule,
   ],
   controllers: [AppController],
- providers: [
+  providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useExisting: AuthGuard,
