@@ -32,6 +32,8 @@ import { ErrorResponseDto } from '@/common/dto/error-response.dto';
 import { Public } from '@/common/decorators/public.decorator';
 import { Throttle } from '@nestjs/throttler';
 import { Role } from '@prisma/client';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { MessageResponseDto } from '@/common/dto/message-response.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -54,6 +56,24 @@ export class AuthController {
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
+
+      // verify otp
+    @Public()
+    @Throttle({ default: { limit: 3, ttl: 60000 } })
+    @Post('verify-otp')
+    @ApiOperation({ summary: 'Verify email with OTP' })
+    @ApiBody({ type: VerifyOtpDto })
+    @ApiOkResponse({
+        description: 'Email verified successfully',
+        type: MessageResponseDto
+    })
+    @ApiBadRequestResponse({
+        description: 'Invalid or expired OTP',
+        type: ErrorResponseDto
+    })
+    verifyOTP(@Body() verifyOtpDto: VerifyOtpDto) {
+        return this.authService.verifyOTP(verifyOtpDto);
+    }
 
   // login
   @Public()

@@ -16,6 +16,7 @@ import { MailService } from '../../providers/mail/mail.service';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import { welcomeEmailTemplate } from '@/common/templates/welcome-email.template';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Injectable()
 export class AuthService {
@@ -41,25 +42,82 @@ export class AuthService {
         ...userData,
         role: (dto.role as unknown as Role) || Role.student,
         password: hashedPassword,
+        is_verified: false,
+      },
+    });
+
+    // Generate 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins expiry
+
+    // Save OTP in database
+    await this.prisma.emailOtp.create({
+      data: {
+        email: dto.email,
+        otp_code: otpCode,
+        expires_at: expiresAt,
       },
     });
 
     // Send Welcome Email
     try {
-
-      const senderName = this.configService.get<string>('mail.senderName') || 'Our Team';
-      const emailContent = welcomeEmailTemplate(dto.firstName, senderName);
+      const senderName = this.mailService.getSenderName();
+      const emailBody = welcomeEmailTemplate(dto.firstName, senderName, otpCode);
 
       await this.mailService.sendMail(
         dto.email,
         'Welcome to our platform!',
-       emailContent,
+        emailBody,
       );
     } catch (error) {
       console.error('Email failed to send:', error.message);
     }
 
-    return this.generateUserToken(user);
+    return {
+      message: 'Registration successful. Please check your email for the OTP.',
+    };
+  }
+
+  // verifyOTP
+  async verifyOTP(dto: VerifyOtpDto) {
+    //  Find the latest OTP for this email
+    const otpData = await this.prisma.emailOtp.findFirst({
+      where: {
+        email: dto.email,
+        otp_code: dto.otp_code,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!otpData) {
+      throw new BadRequestException('Invalid OTP code');
+    }
+
+    //  Check expiry
+    if (new Date() > otpData.expires_at) {
+      throw new BadRequestException('OTP has expired');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (!user) throw new BadRequestException('User not found');
+
+    //  Update User status
+    await this.prisma.user.update({
+      where: { email: dto.email },
+      data: { is_verified: true },
+    });
+
+    //  Delete the used OTP
+    await this.prisma.emailOtp.delete({
+      where: { id: otpData.id },
+    });
+
+    return {
+      success: true,
+      message: 'Email verified successfully. You can now login.',
+    };
   }
 
   // login
@@ -71,6 +129,13 @@ export class AuthService {
 
     const isMatch = await comparePassword(dto.password, user.password);
     if (!isMatch) throw new UnauthorizedException('Invalid credentials');
+
+    // Add this check
+    if (!user.is_verified) {
+      throw new UnauthorizedException(
+        'Please verify your email before logging in',
+      );
+    }
 
     return this.generateUserToken(user);
   }
