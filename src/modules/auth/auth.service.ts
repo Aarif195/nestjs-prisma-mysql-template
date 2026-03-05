@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { JwtService } from '@nestjs/jwt';
 import { hashPassword, comparePassword } from '../../common/utils/helpers';
@@ -10,9 +14,7 @@ import { Role } from '@prisma/client';
 
 import { MailService } from '../../providers/mail/mail.service';
 import { OAuth2Client } from 'google-auth-library';
-
-// Initialize the client
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -20,12 +22,13 @@ export class AuthService {
     private prisma: DatabaseService,
     private jwtService: JwtService,
     private mailService: MailService,
-  ) { }
+    private configService: ConfigService,
+  ) {}
 
   // register
   async register(dto: RegisterDto) {
     const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email }
+      where: { email: dto.email },
     });
     if (existing) throw new BadRequestException('Email already exists');
 
@@ -35,11 +38,10 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: {
         ...userData,
-        role:( dto.role as unknown as Role) || Role.student,
-        password: hashedPassword
+        role: (dto.role as unknown as Role) || Role.student,
+        password: hashedPassword,
       },
     });
-
 
     // Send Welcome Email
     try {
@@ -51,7 +53,6 @@ export class AuthService {
        <p>Best regards,</p>
        <p>${process.env.MAIL_SENDER_NAME || 'Our Team'}</p>`,
       );
-
     } catch (error) {
       console.error('Email failed to send:', error.message);
     }
@@ -62,7 +63,7 @@ export class AuthService {
   // login
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email }
+      where: { email: dto.email },
     });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
@@ -80,7 +81,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
       },
       token: this.jwtService.sign(payload),
     };
@@ -89,13 +90,17 @@ export class AuthService {
   // googleLogin
   async googleLogin(dto: GoogleLoginDto) {
     try {
+      const googleClientId = this.configService.get<string>('google.clientId');
+      const client = new OAuth2Client(googleClientId);
+
       const ticket = await client.verifyIdToken({
         idToken: dto.idToken,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
 
       const payload = ticket.getPayload();
-      if (!payload || !payload.email) throw new BadRequestException('Invalid Google token');
+      if (!payload || !payload.email)
+        throw new BadRequestException('Invalid Google token');
 
       const email = payload.email;
       const firstName = payload.given_name || 'User';
@@ -121,16 +126,13 @@ export class AuthService {
         await this.mailService.sendMail(
           email,
           'Welcome to our platform!',
-          `<p>Hi ${firstName}, your account has been created via Google.</p>`
+          `<p>Hi ${firstName}, your account has been created via Google.</p>`,
         );
       }
-
 
       return this.generateUserToken(user);
     } catch (error) {
       throw new UnauthorizedException('Google authentication failed');
     }
   }
-
-
 }

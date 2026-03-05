@@ -14,4 +14,7 @@ export const envConfig = () => ({
     senderEmail: process.env.MAIL_SENDER_EMAIL,
     senderName: process.env.MAIL_SENDER_NAME,
   },
+   google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  },
 });
