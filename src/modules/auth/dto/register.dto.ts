@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MinLength, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from './google-login.dto';
+import { UserRole } from '@/common/guards/types';
 
 export class RegisterDto {
   @IsNotEmpty({ message: 'First name is required' })
